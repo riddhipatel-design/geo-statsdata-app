@@ -21,6 +21,26 @@ const numericOptions = [
   const handleClick = (point) => {
     dispatch(setSelectedEarthquake(point));
   };
+   // ✅ Custom Tooltip
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const d = payload[0].payload;
+
+      return (
+        <div className="bg-white p-3 border rounded shadow text-sm space-y-1">
+          <p className="font-semibold text-blue-600">{d.place}</p>
+          <p>Mag: {d.mag}</p>
+          <p>Depth: {d.depth}</p>
+          <p className="text-gray-500 text-xs">
+            {new Date(d.time).toLocaleString()}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+
 
   return (
     <div className="p-4 mt-5 ml-2 bg-white shadow rounded">
@@ -43,7 +63,8 @@ const numericOptions = [
         <CartesianGrid />
         <XAxis dataKey={xKey} />
         <YAxis dataKey={yKey} />
-        <Tooltip />
+        {/* Custom Tooltip */}
+        <Tooltip content={<CustomTooltip />} />
         <Scatter
           data={data}
           fill="#8884d8"
