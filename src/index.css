@@ -3,18 +3,6 @@
 @tailwind utilities;
 
 
-@keyframes highlightFade {
-  0% {
-    background-color: #fde68a;
-  }
-  100% {
-    background-color: transparent;
-  }
-}
-
-.highlight-animate {
-  animation: highlightFade 2s ease;
-}
 
 /*
 :root {

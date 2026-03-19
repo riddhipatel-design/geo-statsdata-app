@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setSelectedEarthquake,
+  setHoveredEarthquake, // ✅ Import this
   setSearch
 } from "../redux/store";
 
@@ -14,20 +15,16 @@ export default function DataPanel({ data }) {
 
   const columns = ["time", "latitude", "longitude", "depth", "mag", "place"];
   const rowRefs = useRef({});
-  const [animateId, setAnimateId] = useState(null);
 
-  // ✅ Scroll ONLY when selected (click)
+  // Scroll ONLY when selected (click)
   useEffect(() => {
-    if (selected?.id && rowRefs.current[selected.id]) {
-      rowRefs.current[selected.id].scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-
-      setAnimateId(selected.id);
-      setTimeout(() => setAnimateId(null), 2000);
-    }
-  }, [selected]);
+  if (selected?.id && rowRefs.current[selected.id]) {
+    rowRefs.current[selected.id].scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  }
+}, [selected]);
 
   const filteredData = data.filter(row =>
     row.place?.toLowerCase().includes((search || "").toLowerCase())
@@ -94,11 +91,13 @@ export default function DataPanel({ data }) {
                   onClick={() => dispatch(setSelectedEarthquake(row))}
                   className={`cursor-pointer ${
                     isSelected
-                      ? `bg-yellow-200 ${animateId === row.id ? "highlight-animate" : ""}`
+                      ? "bg-yellow-200"       // Active selected row
                       : isHovered
-                      ? "bg-orange-100"
+                      ? "bg-orange-200"       // Hover highlight
                       : "hover:bg-gray-100"
                   }`}
+                  onMouseEnter={() => dispatch(setHoveredEarthquake(row))}
+                  onMouseLeave={() => dispatch(setHoveredEarthquake(null))}
                 >
                   {columns.map(col => (
                     <td key={col} className="border p-2">
