@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedEarthquake, setSearch } from "../redux/store";
 
@@ -8,6 +8,22 @@ export default function DataPanel({ data }) {
   const search = useSelector(state => state.earthquake.search);
 
   const columns = ["time", "latitude", "longitude", "depth", "mag", "place"];
+  const rowRefs = useRef({});
+  const [animateId, setAnimateId] = useState(null);
+ useEffect(() => {
+  if (selected?.id && rowRefs.current[selected.id]) {
+    rowRefs.current[selected.id].scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    setAnimateId(selected.id);
+
+    setTimeout(() => {
+      setAnimateId(null);
+    }, 2000);
+  }
+}, [selected]);
 
  const filteredData = data.filter(row =>
   row.place?.toLowerCase().includes((search || "").toLowerCase())
@@ -15,6 +31,7 @@ export default function DataPanel({ data }) {
 
 const totalCount = data.length;
 const filteredCount = filteredData.length;
+const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   return (
     <div className="max-h-[600px] mt-5 ml-2 bg-white shadow rounded flex flex-col">
@@ -36,7 +53,7 @@ const filteredCount = filteredData.length;
       ✕
     </button>
   )}
-  <p className="text-md text-gray-500 mt-1">
+ <div className="text-md text-gray-500 mt-1">
   {search ? (
     <>
       Showing <span className="font-medium">{filteredCount}</span> of{" "}
@@ -47,12 +64,13 @@ const filteredCount = filteredData.length;
       Total: <span className="font-medium">{totalCount}</span> records
     </>
   )}
+
   {search && filteredCount === 0 && (
-  <p className="text-red-500 text-sm mt-1">
-    No matching results found
-  </p>
-)}
-</p>
+    <div className="text-red-500 text-sm mt-1">
+      No matching results found
+    </div>
+  )}
+</div>
 </div>
 </div>
 <div className="overflow-auto">
@@ -68,18 +86,25 @@ const filteredCount = filteredData.length;
 
         <tbody>
           {filteredData.map((row, idx) => (
-            <tr
-              key={idx}
-              onClick={() => dispatch(setSelectedEarthquake(row))}
-              className={selected === row ? "bg-yellow-200" : "hover:bg-gray-100"}
-            >
+           <tr
+  key={row.id}
+  ref={(el) => (rowRefs.current[row.id] = el)}
+  onClick={() => dispatch(setSelectedEarthquake(row))}
+ className={`cursor-pointer ${
+  selected?.id === row.id
+    ? `bg-yellow-200 ${
+        animateId === row.id ? "highlight-animate" : ""
+      }`
+    : "hover:bg-gray-100"
+}`}
+>
               {columns.map((col) => (
                 <td key={col} className="border p-2">
                   {col === "place" && search
   ? row[col].replace(
-      new RegExp(search, "gi"),
-      (match) => `🔍${match}`
-    )
+  new RegExp(safeSearch, "gi"),
+  (match) => `🔍${match}`
+)
   : col === "time"
   ? new Date(row[col]).toLocaleString()
   : row[col]}
