@@ -6,24 +6,17 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  setSelectedEarthquake,
-  setHoveredEarthquake
-} from "../redux/store";
+import { setSelectedEarthquake, setHoveredEarthquake } from "../redux/store";
 import Dropdown from "./Dropdown";
 
 export default function ChartPanel({ data }) {
   const dispatch = useDispatch();
 
-  const selected = useSelector(
-    (state) => state.earthquake.selectedEarthquake
-  );
-  const hovered = useSelector(
-    (state) => state.earthquake.hoveredEarthquake
-  );
+  const selected = useSelector((state) => state.earthquake.selectedEarthquake);
+  const hovered = useSelector((state) => state.earthquake.hoveredEarthquake);
   const search = useSelector((state) => state.earthquake.search);
 
   const [xKey, setXKey] = useState("mag");
@@ -33,12 +26,12 @@ export default function ChartPanel({ data }) {
     { label: "Magnitude", value: "mag" },
     { label: "Depth", value: "depth" },
     { label: "Latitude", value: "latitude" },
-    { label: "Longitude", value: "longitude" }
+    { label: "Longitude", value: "longitude" },
   ];
 
   const filteredData = useMemo(() => {
     return data.filter((row) =>
-      row.place?.toLowerCase().includes((search || "").toLowerCase())
+      row.place?.toLowerCase().includes((search || "").toLowerCase()),
     );
   }, [data, search]);
 
@@ -77,59 +70,59 @@ export default function ChartPanel({ data }) {
     }
     return null;
   };
-const getNiceMax = (value) => {
-  const step = 20;
-  return Math.ceil((value + 20) / step) * step;
-};
-const maxY = Math.max(...filteredData.map(d => Number(d[yKey]) || 0));
-const niceMax = getNiceMax(maxY);
-const ticks = Array.from({ length: niceMax / 20 + 1 }, (_, i) => i * 20);
+  const getNiceMax = (value) => {
+    const step = 20;
+    return Math.ceil((value + 20) / step) * step;
+  };
+  const maxY = Math.max(...filteredData.map((d) => Number(d[yKey]) || 0));
+  const niceMax = getNiceMax(maxY);
+  const ticks = Array.from({ length: niceMax / 20 + 1 }, (_, i) => i * 20);
 
   return (
     <div className="p-4 mt-5 ml-2 bg-white rounded-lg shadow-lg">
       <div className="mb-4 flex flex-col sm:flex-row gap-4 items-center">
-        <Dropdown label="X-Axis" value={xKey} options={numericOptions} onChange={setXKey} />
-        <Dropdown label="Y-Axis" value={yKey} options={numericOptions} onChange={setYKey} />
-      </div>
-<div className="w-full h-[600px]">
-        <ResponsiveContainer width="100%" height="100%">
-      <ScatterChart>
-        <CartesianGrid  strokeDasharray="2 2"/>
-        <XAxis dataKey={xKey} />
-       <YAxis
-  dataKey={yKey}
-  domain={[0, niceMax]}
-  ticks={ticks}
-/>
-        <Tooltip content={<CustomTooltip />} />
-
-        <Scatter
-          data={filteredData}
-          onClick={handleClick}
-          onMouseEnter={handleHover}
-          onMouseLeave={handleLeave}
-          shape={({ cx, cy, payload }) => {
-            const isSelected = selected?.id === payload?.id;
-            const isHovered = hovered?.id === payload?.id;
-
-            return (
-              <circle
-                cx={cx}
-                cy={cy}
-                r={isSelected ? 8 : isHovered ? 6 : 5}
-                fill={
-                  isSelected
-                    ? "red"
-                    : isHovered
-                    ? "orange"
-                    : "#8884d8"
-                }
-              />
-            );
-          }}
+        <Dropdown
+          label="X-Axis"
+          value={xKey}
+          options={numericOptions}
+          onChange={setXKey}
         />
-      </ScatterChart>
-      </ResponsiveContainer>
+        <Dropdown
+          label="Y-Axis"
+          value={yKey}
+          options={numericOptions}
+          onChange={setYKey}
+        />
+      </div>
+      <div className="w-full h-[600px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart>
+            <CartesianGrid strokeDasharray="2 2" />
+            <XAxis dataKey={xKey} />
+            <YAxis dataKey={yKey} domain={[0, niceMax]} ticks={ticks} />
+            <Tooltip content={<CustomTooltip />} />
+
+            <Scatter
+              data={filteredData}
+              onClick={handleClick}
+              onMouseEnter={handleHover}
+              onMouseLeave={handleLeave}
+              shape={({ cx, cy, payload }) => {
+                const isSelected = selected?.id === payload?.id;
+                const isHovered = hovered?.id === payload?.id;
+
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={isSelected ? 8 : isHovered ? 6 : 5}
+                    fill={isSelected ? "red" : isHovered ? "orange" : "#8884d8"}
+                  />
+                );
+              }}
+            />
+          </ScatterChart>
+        </ResponsiveContainer>
       </div>
 
       <p className="text-sm text-gray-500 mt-2">

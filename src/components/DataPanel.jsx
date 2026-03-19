@@ -2,32 +2,32 @@ import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setSelectedEarthquake,
-  setHoveredEarthquake, // ✅ Import this
-  setSearch
+  setHoveredEarthquake,
+  setSearch,
 } from "../redux/store";
 
 export default function DataPanel({ data }) {
   const dispatch = useDispatch();
 
-  const selected = useSelector(state => state.earthquake.selectedEarthquake);
-  const hovered = useSelector(state => state.earthquake.hoveredEarthquake);
-  const search = useSelector(state => state.earthquake.search);
+  const selected = useSelector((state) => state.earthquake.selectedEarthquake);
+  const hovered = useSelector((state) => state.earthquake.hoveredEarthquake);
+  const search = useSelector((state) => state.earthquake.search);
 
   const columns = ["time", "latitude", "longitude", "depth", "mag", "place"];
   const rowRefs = useRef({});
 
   // Scroll ONLY when selected (click)
   useEffect(() => {
-  if (selected?.id && rowRefs.current[selected.id]) {
-    rowRefs.current[selected.id].scrollIntoView({
-      behavior: "smooth",
-      block: "center"
-    });
-  }
-}, [selected]);
+    if (selected?.id && rowRefs.current[selected.id]) {
+      rowRefs.current[selected.id].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [selected]);
 
-  const filteredData = data.filter(row =>
-    row.place?.toLowerCase().includes((search || "").toLowerCase())
+  const filteredData = data.filter((row) =>
+    row.place?.toLowerCase().includes((search || "").toLowerCase()),
   );
 
   const totalCount = data.length;
@@ -36,51 +36,66 @@ export default function DataPanel({ data }) {
   const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   return (
-    <div className="max-h-[600px] mt-5 ml-2 bg-white shadow rounded flex flex-col">
+    <div className="h-full max-h-[800px] p-4 my-5 ml-1 bg-white shadow-lg rounded-xl flex flex-col overflow-hidden">
+      {/* Sticky Search Header */}
+      <div className="sticky top-0 bg-white z-10 px-4 py-3 border-b">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          {/* Search Input */}
+          <div className="flex w-full sm:w-2/3 items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search location..."
+              className="w-full p-2.5 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+              value={search}
+              onChange={(e) => dispatch(setSearch(e.target.value))}
+            />
 
-      {/* Sticky Search */}
-      <div className="sticky top-0 bg-white z-10 p-2 border-b">
-        <div className="flex gap-6 items-center">
-
-          <input
-            type="text"
-            placeholder="Search location..."
-            className="p-2 border rounded w-3/4 shadow-md"
-            value={search}
-            onChange={(e) => dispatch(setSearch(e.target.value))}
-          />
-
-          {search && (
-            <button
-              onClick={() => dispatch(setSearch(""))}
-              className="px-3 bg-gray-200 rounded hover:bg-gray-300"
-            >
-              ✕
-            </button>
-          )}
-
-          <div className="text-md text-gray-500 mt-1">
-            {search
-              ? `Showing ${filteredCount} of ${totalCount}`
-              : `Total: ${totalCount}`}
+            {search && (
+              <button
+                onClick={() => dispatch(setSearch(""))}
+                className="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
+          {/* Result Count */}
+          <div className="text-sm text-gray-500">
+            {search ? (
+              <>
+                Showing <span className="font-medium">{filteredCount}</span> of{" "}
+                <span className="font-medium">{totalCount}</span>
+              </>
+            ) : (
+              <>
+                Total: <span className="font-medium">{totalCount}</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-auto">
-        <table className="w-full text-sm border-collapse border border-gray-200">
-          <thead>
+      {/* Table Container */}
+      <div className="overflow-auto flex-1">
+        <table className="w-full text-sm border-collapse">
+          {/* Table Header */}
+          <thead className="sticky top-0 bg-gray-50 z-[5]">
             <tr>
-              {columns.map(col => (
-                <th key={col} className="border p-2">{col}</th>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  className="text-left text-base px-3 py-2 border-b font-medium text-gray-600 whitespace-nowrap"
+                >
+                  {col}
+                </th>
               ))}
             </tr>
           </thead>
 
+          {/* Table Body */}
           <tbody>
-            {filteredData.map(row => {
+            {filteredData.map((row) => {
               const isSelected = selected?.id === row.id;
               const isHovered = hovered?.id === row.id;
 
@@ -89,33 +104,36 @@ export default function DataPanel({ data }) {
                   key={row.id}
                   ref={(el) => (rowRefs.current[row.id] = el)}
                   onClick={() => dispatch(setSelectedEarthquake(row))}
-                  className={`cursor-pointer ${
-                    isSelected
-                      ? "bg-yellow-200"       // Active selected row
-                      : isHovered
-                      ? "bg-orange-200"       // Hover highlight
-                      : "hover:bg-gray-100"
-                  }`}
                   onMouseEnter={() => dispatch(setHoveredEarthquake(row))}
                   onMouseLeave={() => dispatch(setHoveredEarthquake(null))}
+                  className={`cursor-pointer transition-colors ${
+                    isSelected
+                      ? "bg-yellow-200"
+                      : isHovered
+                        ? "bg-orange-200"
+                        : "hover:bg-gray-100"
+                  }`}
                 >
-                  {columns.map(col => (
-                    <td key={col} className="border p-2">
+                  {columns.map((col) => (
+                    <td key={col} className="px-3 py-2 border-b text-gray-700">
                       {col === "place" && search
                         ? row[col].replace(
                             new RegExp(safeSearch, "gi"),
-                            (m) => `🔍${m}`
+                            (m) => `🔍${m}`,
                           )
                         : col === "time"
-                        ? new Date(row[col]).toLocaleString()
-                        : row[col]}
+                          ? new Date(row[col]).toLocaleString()
+                          : col === "latitude" || col === "longitude"
+                            ? Number(row[col]).toFixed(4)
+                            : col === "mag" || col === "depth"
+                              ? Number(row[col]).toFixed(2)
+                              : row[col]}
                     </td>
                   ))}
                 </tr>
               );
             })}
           </tbody>
-
         </table>
       </div>
     </div>

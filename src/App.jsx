@@ -15,12 +15,12 @@ if (!data || data.length === 0) {
   return (
    <div className="flex flex-col md:flex-row gap-4 p-4">
   {/* Chart Panel */}
-  <div className="md:w-1/2 w-full">
+  <div className="md:w-1/2 w-full min-h-[600px]">
     <ChartPanel data={data} />
   </div>
 
   {/* Data Panel */}
-  <div className="md:w-1/2 w-full">
+  <div className="md:w-1/2 w-full min-h-[600px]">
     <DataPanel data={data} />
   </div>
 </div>
