@@ -40,6 +40,9 @@ const numericOptions = [
     return null;
   };
 
+const filteredData = data.filter((row) =>
+  row.place?.toLowerCase().includes((search || "").toLowerCase())
+);
 
 
   return (
@@ -66,31 +69,19 @@ const numericOptions = [
         {/* Custom Tooltip */}
         <Tooltip content={<CustomTooltip />} />
         <Scatter
-          data={data}
+          data={filteredData}
           fill="#8884d8"
           onClick={handleClick}
           shape={(props) => {
   const { cx, cy, payload } = props;
-
   const isSelected = selected === payload;
-
-  const isMatch = payload.place
-    ?.toLowerCase()
-    .includes(search.toLowerCase());
 
   return (
     <circle
       cx={cx}
       cy={cy}
-      r={isSelected ? 8 : isMatch ? 6 : 4}
-      fill={
-        isSelected
-          ? "red"
-          : isMatch
-          ? "orange"
-          : "#8884d8"
-      }
-      opacity={search ? (isMatch ? 1 : 0.2) : 1}
+      r={isSelected ? 8 : 5}
+      fill={isSelected ? "red" : "#8884d8"}
     />
   );
 }}

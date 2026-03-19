@@ -13,17 +13,49 @@ export default function DataPanel({ data }) {
   row.place?.toLowerCase().includes((search || "").toLowerCase())
 );
 
-  return (
-    <div className="overflow-auto max-h-[600px] p-2 mt-5 ml-2 bg-white shadow rounded">
-      
-      <input
-        type="text"
-        placeholder="Search location..."
-        className="mb-2 p-2 border rounded w-full"
-        value={search}
-        onChange={(e) => dispatch(setSearch(e.target.value))}
-      />
+const totalCount = data.length;
+const filteredCount = filteredData.length;
 
+  return (
+    <div className="max-h-[600px] mt-5 ml-2 bg-white shadow rounded flex flex-col">
+      <div className="sticky top-0 bg-white z-10 p-2 border-b">
+     <div className="flex gap-6 items-center">
+  <input
+    type="text"
+    placeholder="Search location..."
+    className="p-2 border rounded w-3/4 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+    value={search}
+    onChange={(e) => dispatch(setSearch(e.target.value))}
+  />
+
+  {search && (
+    <button
+      onClick={() => dispatch(setSearch(""))}
+      className="px-3 bg-gray-200 rounded hover:bg-gray-300"
+    >
+      ✕
+    </button>
+  )}
+  <p className="text-md text-gray-500 mt-1">
+  {search ? (
+    <>
+      Showing <span className="font-medium">{filteredCount}</span> of{" "}
+      <span className="font-medium">{totalCount}</span> results
+    </>
+  ) : (
+    <>
+      Total: <span className="font-medium">{totalCount}</span> records
+    </>
+  )}
+  {search && filteredCount === 0 && (
+  <p className="text-red-500 text-sm mt-1">
+    No matching results found
+  </p>
+)}
+</p>
+</div>
+</div>
+<div className="overflow-auto">
       <table className="w-full text-sm border-collapse border border-gray-200">
         
         <thead>
@@ -58,6 +90,7 @@ export default function DataPanel({ data }) {
         </tbody>
 
       </table>
+      </div>
     </div>
   );
 }
