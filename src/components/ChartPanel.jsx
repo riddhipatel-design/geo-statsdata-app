@@ -5,7 +5,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip
+  Tooltip,
+  ResponsiveContainer
 } from "recharts";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -64,7 +65,7 @@ export default function ChartPanel({ data }) {
       const d = payload[0].payload;
 
       return (
-        <div className="bg-white p-3 border rounded shadow text-sm space-y-1">
+        <div className="bg-white p-3 rounded-lg shadow-lg text-sm space-y-1 border border-gray-200">
           <p className="font-semibold text-blue-600">{d.place}</p>
           <p>Mag: {d.mag}</p>
           <p>Depth: {d.depth}</p>
@@ -76,18 +77,30 @@ export default function ChartPanel({ data }) {
     }
     return null;
   };
+const getNiceMax = (value) => {
+  const step = 20;
+  return Math.ceil((value + 20) / step) * step;
+};
+const maxY = Math.max(...filteredData.map(d => Number(d[yKey]) || 0));
+const niceMax = getNiceMax(maxY);
+const ticks = Array.from({ length: niceMax / 20 + 1 }, (_, i) => i * 20);
 
   return (
-    <div className="p-4 mt-5 ml-2 bg-white shadow rounded">
-      <div className="mb-4 flex gap-4">
+    <div className="p-4 mt-5 ml-2 bg-white rounded-lg shadow-lg">
+      <div className="mb-4 flex flex-col sm:flex-row gap-4 items-center">
         <Dropdown label="X-Axis" value={xKey} options={numericOptions} onChange={setXKey} />
         <Dropdown label="Y-Axis" value={yKey} options={numericOptions} onChange={setYKey} />
       </div>
-
-      <ScatterChart width={600} height={500}>
-        <CartesianGrid />
+<div className="w-full h-[600px]">
+        <ResponsiveContainer width="100%" height="100%">
+      <ScatterChart>
+        <CartesianGrid  strokeDasharray="2 2"/>
         <XAxis dataKey={xKey} />
-        <YAxis dataKey={yKey} />
+       <YAxis
+  dataKey={yKey}
+  domain={[0, niceMax]}
+  ticks={ticks}
+/>
         <Tooltip content={<CustomTooltip />} />
 
         <Scatter
@@ -116,6 +129,8 @@ export default function ChartPanel({ data }) {
           }}
         />
       </ScatterChart>
+      </ResponsiveContainer>
+      </div>
 
       <p className="text-sm text-gray-500 mt-2">
         {search
