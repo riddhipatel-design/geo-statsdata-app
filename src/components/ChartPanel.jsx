@@ -8,7 +8,10 @@ import {
   Tooltip
 } from "recharts";
 import { useSelector, useDispatch } from "react-redux";
-import { setSelectedEarthquake } from "../redux/store";
+import {
+  setSelectedEarthquake,
+  setHoveredEarthquake
+} from "../redux/store";
 import Dropdown from "./Dropdown";
 
 export default function ChartPanel({ data }) {
@@ -16,6 +19,9 @@ export default function ChartPanel({ data }) {
 
   const selected = useSelector(
     (state) => state.earthquake.selectedEarthquake
+  );
+  const hovered = useSelector(
+    (state) => state.earthquake.hoveredEarthquake
   );
   const search = useSelector((state) => state.earthquake.search);
 
@@ -29,28 +35,30 @@ export default function ChartPanel({ data }) {
     { label: "Longitude", value: "longitude" }
   ];
 
-  // ✅ Filter data based on search (memoized for performance)
   const filteredData = useMemo(() => {
     return data.filter((row) =>
       row.place?.toLowerCase().includes((search || "").toLowerCase())
     );
   }, [data, search]);
 
-  // ✅ Correct click handler (important fix)
+  // ✅ Click → select (scroll will happen in DataPanel)
   const handleClick = (point) => {
-    if (point && point.payload) {
+    if (point?.payload) {
       dispatch(setSelectedEarthquake(point.payload));
     }
   };
 
-  // ✅ (Optional) Hover sync (can comment if too sensitive)
+  // ✅ Hover → highlight only (NO scroll)
   const handleHover = (point) => {
-    if (point && point.payload) {
-      dispatch(setSelectedEarthquake(point.payload));
+    if (point?.payload) {
+      dispatch(setHoveredEarthquake(point.payload));
     }
   };
 
-  // ✅ Custom Tooltip
+  const handleLeave = () => {
+    dispatch(setHoveredEarthquake(null));
+  };
+
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const d = payload[0].payload;
@@ -71,54 +79,44 @@ export default function ChartPanel({ data }) {
 
   return (
     <div className="p-4 mt-5 ml-2 bg-white shadow rounded">
-      
-      {/* Dropdown Controls */}
       <div className="mb-4 flex gap-4">
-        <Dropdown
-          label="X-Axis"
-          value={xKey}
-          options={numericOptions}
-          onChange={setXKey}
-        />
-
-        <Dropdown
-          label="Y-Axis"
-          value={yKey}
-          options={numericOptions}
-          onChange={setYKey}
-        />
+        <Dropdown label="X-Axis" value={xKey} options={numericOptions} onChange={setXKey} />
+        <Dropdown label="Y-Axis" value={yKey} options={numericOptions} onChange={setYKey} />
       </div>
 
-      {/* Chart */}
       <ScatterChart width={600} height={500}>
         <CartesianGrid />
         <XAxis dataKey={xKey} />
         <YAxis dataKey={yKey} />
-
-        {/* Custom Tooltip */}
         <Tooltip content={<CustomTooltip />} />
 
         <Scatter
           data={filteredData}
           onClick={handleClick}
-          onMouseEnter={handleHover} // optional but powerful
-          shape={(props) => {
-            const { cx, cy, payload } = props;
+          onMouseEnter={handleHover}
+          onMouseLeave={handleLeave}
+          shape={({ cx, cy, payload }) => {
             const isSelected = selected?.id === payload?.id;
+            const isHovered = hovered?.id === payload?.id;
 
             return (
               <circle
                 cx={cx}
                 cy={cy}
-                r={isSelected ? 8 : 5}
-                fill={isSelected ? "red" : "#8884d8"}
+                r={isSelected ? 8 : isHovered ? 6 : 5}
+                fill={
+                  isSelected
+                    ? "red"
+                    : isHovered
+                    ? "orange"
+                    : "#8884d8"
+                }
               />
             );
           }}
         />
       </ScatterChart>
 
-      {/* Optional: show count */}
       <p className="text-sm text-gray-500 mt-2">
         {search
           ? `Showing ${filteredData.length} of ${data.length} results`
