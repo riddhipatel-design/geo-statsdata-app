@@ -54,7 +54,7 @@ export default function DataPanel({ data }) {
         </div>
 
         {/* Display count */}
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 my-auto">
           {search
             ? <>Showing <span className="font-medium">{filteredCount}</span> of <span className="font-medium">{totalCount}</span></>
             : <>Total: <span className="font-medium">{totalCount}</span></>}
