@@ -92,7 +92,7 @@ export default function ChartPanel({ data }) {
       {/* Chart */}
       <div className="w-full flex-1 min-h-[600px]"> {/* min-height ensures chart shows on small screens */}
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart>
+          <ScatterChart margin={{ top: 5, right: 5, left: 5, bottom: 26 }}>
             <CartesianGrid strokeDasharray="2 2" />
             <XAxis dataKey={xKey} />
             <YAxis dataKey={yKey} domain={[0, niceMax]} ticks={ticks} />
