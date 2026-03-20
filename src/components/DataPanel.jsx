@@ -1,14 +1,9 @@
 import React, { useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  setSelectedEarthquake,
-  setHoveredEarthquake,
-  setSearch,
-} from "../redux/store";
+import { setSelectedEarthquake, setHoveredEarthquake, setSearch } from "../redux/store";
 
 export default function DataPanel({ data }) {
   const dispatch = useDispatch();
-
   const selected = useSelector((state) => state.earthquake.selectedEarthquake);
   const hovered = useSelector((state) => state.earthquake.hoveredEarthquake);
   const search = useSelector((state) => state.earthquake.search);
@@ -16,84 +11,60 @@ export default function DataPanel({ data }) {
   const columns = ["time", "latitude", "longitude", "depth", "mag", "place"];
   const rowRefs = useRef({});
 
-  // Scroll ONLY when selected (click)
+  // Scroll ONLY when selected
   useEffect(() => {
     if (selected?.id && rowRefs.current[selected.id]) {
-      rowRefs.current[selected.id].scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      rowRefs.current[selected.id].scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [selected]);
 
   const filteredData = data.filter((row) =>
-    row.place?.toLowerCase().includes((search || "").toLowerCase()),
+    row.place?.toLowerCase().includes((search || "").toLowerCase())
   );
-
   const totalCount = data.length;
   const filteredCount = filteredData.length;
-
   const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   return (
-    <div className="h-full max-h-[800px] p-4 my-5 ml-1 bg-white shadow-lg rounded-xl flex flex-col overflow-hidden">
-      {/* Sticky Search Header */}
-      <div className="sticky top-0 bg-white z-10 px-4 py-3 border-b">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          {/* Search Input */}
-          <div className="flex w-full sm:w-2/3 items-center gap-2">
-            <input
-              type="text"
-              placeholder="Search location..."
-              className="w-full p-2.5 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
-              value={search}
-              onChange={(e) => dispatch(setSearch(e.target.value))}
-            />
-
-            {search && (
-              <button
-                onClick={() => dispatch(setSearch(""))}
-                className="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Result Count */}
-          <div className="text-sm text-gray-500">
-            {search ? (
-              <>
-                Showing <span className="font-medium">{filteredCount}</span> of{" "}
-                <span className="font-medium">{totalCount}</span>
-              </>
-            ) : (
-              <>
-                Total: <span className="font-medium">{totalCount}</span>
-              </>
-            )}
-          </div>
+    <div className="flex flex-col bg-white rounded-xl shadow-lg p-4 h-full overflow-hidden">
+      {/* Sticky Search */}
+      <div className="sticky top-0 bg-white z-10 px-4 py-3 border-b flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex w-full sm:w-2/3 items-center gap-2">
+          <input
+            type="text"
+            placeholder="Search location..."
+            className="w-full p-2.5 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+            value={search}
+            onChange={(e) => dispatch(setSearch(e.target.value))}
+          />
+          {search && (
+            <button
+              onClick={() => dispatch(setSearch(""))}
+              className="px-3 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        <div className="text-sm text-gray-500">
+          {search
+            ? <>Showing <span className="font-medium">{filteredCount}</span> of <span className="font-medium">{totalCount}</span></>
+            : <>Total: <span className="font-medium">{totalCount}</span></>}
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="overflow-auto flex-1">
+      {/* Table */}
+      <div className="flex-1 overflow-auto">
         <table className="w-full text-sm border-collapse">
-          {/* Table Header */}
           <thead className="sticky top-0 bg-gray-50 z-[5]">
             <tr>
               {columns.map((col) => (
-                <th
-                  key={col}
-                  className="text-left text-base px-3 py-2 border-b font-medium text-gray-600 whitespace-nowrap"
-                >
+                <th key={col} className="text-left text-base px-3 py-2 border-b font-medium text-gray-600 whitespace-nowrap">
                   {col}
                 </th>
               ))}
             </tr>
           </thead>
-
-          {/* Table Body */}
           <tbody>
             {filteredData.map((row) => {
               const isSelected = selected?.id === row.id;
@@ -117,17 +88,14 @@ export default function DataPanel({ data }) {
                   {columns.map((col) => (
                     <td key={col} className="px-3 py-2 border-b text-gray-700">
                       {col === "place" && search
-                        ? row[col].replace(
-                            new RegExp(safeSearch, "gi"),
-                            (m) => `🔍${m}`,
-                          )
+                        ? row[col].replace(new RegExp(safeSearch, "gi"), (m) => `🔍${m}`)
                         : col === "time"
-                          ? new Date(row[col]).toLocaleString()
-                          : col === "latitude" || col === "longitude"
-                            ? Number(row[col]).toFixed(4)
-                            : col === "mag" || col === "depth"
-                              ? Number(row[col]).toFixed(2)
-                              : row[col]}
+                        ? new Date(row[col]).toLocaleString()
+                        : col === "latitude" || col === "longitude"
+                        ? Number(row[col]).toFixed(4)
+                        : col === "mag" || col === "depth"
+                        ? Number(row[col]).toFixed(2)
+                        : row[col]}
                     </td>
                   ))}
                 </tr>

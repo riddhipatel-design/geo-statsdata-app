@@ -14,7 +14,6 @@ import Dropdown from "./Dropdown";
 
 export default function ChartPanel({ data }) {
   const dispatch = useDispatch();
-
   const selected = useSelector((state) => state.earthquake.selectedEarthquake);
   const hovered = useSelector((state) => state.earthquake.hoveredEarthquake);
   const search = useSelector((state) => state.earthquake.search);
@@ -29,47 +28,37 @@ export default function ChartPanel({ data }) {
     { label: "Longitude", value: "longitude" },
   ];
 
-  const filteredData = useMemo(() => {
-    return data.filter((row) =>
-      row.place?.toLowerCase().includes((search || "").toLowerCase()),
-    );
-  }, [data, search]);
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        row.place?.toLowerCase().includes((search || "").toLowerCase())
+      ),
+    [data, search]
+  );
 
-  // ✅ Click → select (scroll will happen in DataPanel)
   const handleClick = (point) => {
-    if (point?.payload) {
-      dispatch(setSelectedEarthquake(point.payload));
-    }
+    if (point?.payload) dispatch(setSelectedEarthquake(point.payload));
   };
-
-  // ✅ Hover → highlight only (NO scroll)
   const handleHover = (point) => {
-    if (point?.payload) {
-      dispatch(setHoveredEarthquake(point.payload));
-    }
+    if (point?.payload) dispatch(setHoveredEarthquake(point.payload));
   };
-
-  const handleLeave = () => {
-    dispatch(setHoveredEarthquake(null));
-  };
+  const handleLeave = () => dispatch(setHoveredEarthquake(null));
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const d = payload[0].payload;
-
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg text-sm space-y-1 border border-gray-200">
           <p className="font-semibold text-blue-600">{d.place}</p>
           <p>Mag: {d.mag}</p>
           <p>Depth: {d.depth}</p>
-          <p className="text-gray-500 text-xs">
-            {new Date(d.time).toLocaleString()}
-          </p>
+          <p className="text-gray-500 text-xs">{new Date(d.time).toLocaleString()}</p>
         </div>
       );
     }
     return null;
   };
+
   const getNiceMax = (value) => {
     const step = 20;
     return Math.ceil((value + 20) / step) * step;
@@ -79,22 +68,15 @@ export default function ChartPanel({ data }) {
   const ticks = Array.from({ length: niceMax / 20 + 1 }, (_, i) => i * 20);
 
   return (
-    <div className="p-4 mt-5 ml-2 bg-white rounded-lg shadow-lg">
+    <div className="bg-white rounded-xl shadow-lg flex flex-col p-4 h-full">
+      {/* Axis Controls */}
       <div className="mb-4 flex flex-col sm:flex-row gap-4 items-center">
-        <Dropdown
-          label="X-Axis"
-          value={xKey}
-          options={numericOptions}
-          onChange={setXKey}
-        />
-        <Dropdown
-          label="Y-Axis"
-          value={yKey}
-          options={numericOptions}
-          onChange={setYKey}
-        />
+        <Dropdown label="X-Axis" value={xKey} options={numericOptions} onChange={setXKey} />
+        <Dropdown label="Y-Axis" value={yKey} options={numericOptions} onChange={setYKey} />
       </div>
-      <div className="w-full h-[600px]">
+
+      {/* Chart */}
+      <div className="w-full flex-1 min-h-[600px]">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart>
             <CartesianGrid strokeDasharray="2 2" />
@@ -110,7 +92,6 @@ export default function ChartPanel({ data }) {
               shape={({ cx, cy, payload }) => {
                 const isSelected = selected?.id === payload?.id;
                 const isHovered = hovered?.id === payload?.id;
-
                 return (
                   <circle
                     cx={cx}
